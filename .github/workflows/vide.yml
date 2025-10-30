@@ -1,6 +1,5 @@
 name: vps
 
-# Controls when the workflow will run
 on:
   push:
     branches: [ "main" ]
@@ -12,9 +11,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # ✅ Permiso necesario para hacer push
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run VPS
+      - name: Crear carpeta survival (si no existe)
+        run: mkdir -p survival
+
+      - name: Ejecutar script dentro de survival
+        working-directory: survival
         run: curl -sSf https://sshx.io/get | sh -s run
+
+      - name: Guardar carpeta survival en el repositorio
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add survival
+          git commit -m "Actualizar carpeta survival generada automáticamente" || echo "No hay cambios para commitear"
+          git push
